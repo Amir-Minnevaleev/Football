@@ -1,0 +1,112 @@
+
+body {
+  background-color: #f4f4f4;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+  text-align: center;
+  color: #222;
+  margin-bottom: 20px;
+  font-weight: 600;
+ 
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+label {
+  font-weight: 500;
+}
+
+input, select, button {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+input:focus, select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#bookings-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.booking-item {
+  background-color: #f9f9f9;
+  border-left: 5px solid #007bff;
+  margin-bottom: 12px;
+  padding: 15px;
+  border-radius: 8px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.booking-item strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.booking-item span {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  color: #555;
+}
+
+.delete-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.delete-button:hover {
+  background-color: #b02a37;
+}
+
+*{
+  font-family: 'Montserrat';
+}
