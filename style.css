@@ -110,6 +110,21 @@ li.active-booking {
   background-color: #d4f9d5; /* мягкий зелёный */
   border-left: 4px solid #4CAF50;
 }
+.delete-btn {
+  margin-top: 10px;
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.delete-btn:hover {
+  background: #c62828;
+}
 
 * {
   font-family: 'Montserrat';

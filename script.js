@@ -4,9 +4,20 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 // Допустимые коды
 const validCodes = {
+  "Марат Абый": "1525",
   "Камил Абый": "1234",
   "Данил Абый": "5678",
   "Карим Абый": "9999",
+  "Рамазан Абый": "5642",
+  "Мунир Абый": "0976",
+  "Нияз Абый": "7639",
+  "Яхъя Абый": "7298",
+  "Гумар Абый": "6483",
+  "Райнур Абый": "3409",
+  "Айдар Абый": "1074",
+  "Рустам Саматович": "4507",
+  "Роберт Абый": "3900",
+  "Руслан Абый" : "2953"
 };
 
 const bookingsList = document.getElementById("bookings-list");
