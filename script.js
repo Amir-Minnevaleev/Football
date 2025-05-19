@@ -80,6 +80,14 @@ form.addEventListener("submit", async function(e) {
     return;
   }
 
+  const bookingStartDateTime = new Date(`${date}T${timeStart}`);
+  const now = new Date();
+
+  if (bookingStartDateTime < now) {
+    alert("❌ Нельзя бронировать прошедшее время!");
+    return;
+  }
+
   if (timeEnd <= timeStart) {
     alert("Время окончания должно быть позже времени начала!");
     return;
