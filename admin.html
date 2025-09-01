@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Панель администратора</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Панель администратора</h1>
+        <a href="index.html" class="admin-link">Вернуться к бронированию</a>
+    </header>
+
+    <main class="admin-wrapper">
+        <section class="admin-login" id="login-section">
+            <h2>Вход для администратора</h2>
+            <form id="login-form">
+                <label>Логин:
+                    <input type="text" id="admin-username" required />
+                </label>
+
+                <label>Пароль:
+                    <input type="password" id="admin-password" required />
+                </label>
+
+                <button type="submit" class="btn-blue">Войти</button>
+            </form>
+        </section>
+
+        <section class="admin-panel" id="admin-panel" style="display: none;">
+            <div class="admin-header">
+                <h2>Управление пользователями</h2>
+                <button id="add-user-btn" class="btn-green">+ Добавить воспитателя</button>
+            </div>
+
+            <div class="admin-actions">
+                <form id="add-user-form" class="user-form" style="display: none;">
+                    <h3>Добавить нового пользователя</h3>
+                    <div class="form-row">
+                        <label>Имя:
+                            <input type="text" id="new-user-name" required />
+                        </label>
+
+                        <label>Код:
+                            <input type="text" id="new-user-code" required />
+                        </label>
+
+                        <button type="submit" class="btn-green">Добавить</button>
+                        <button type="button" id="cancel-add-user" class="btn-gray">Отмена</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="users-list">
+                <h3>Текущие пользователи</h3>
+                <div id="users-container"></div>
+            </div>
+
+            <div class="admin-bookings">
+                <h3>Все бронирования</h3>
+                <div id="admin-bookings-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Загрузка SQL.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script>
+        // Глобальная функция для инициализации SQL.js
+        window.initDatabase = function (callback) {
+            if (window.SQL) {
+                // SQL.js уже загружен
+                callback();
+                return;
+            }
+
+            initSqlJs({
+                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+            }).then(function (SQL) {
+                window.SQL = SQL;
+                callback();
+            }).catch(function (error) {
+                console.error("Ошибка загрузки SQL.js:", error);
+                alert("Ошибка загрузки базы данных. Пожалуйста, обновите страницу.");
+            });
+        };
+    </script>
+
+    <script src="database.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

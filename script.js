@@ -1,166 +1,222 @@
-
-const supabaseUrl = 'https://fdcvooegcdzhcxyxwukz.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZkY3Zvb2VnY2R6aGN4eXh3dWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczODQ1NDcsImV4cCI6MjA2Mjk2MDU0N30.v4SxwvEQ0A0LC1SKwbvqBLUyl2Gcmyej55V_5pY1gkc';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-// Допустимые коды
-const validCodes = {
-  "Марат Абый": "1525",
-  "Камил Абый": "1234",
-  "Данил Абый": "5678",
-  "Карим Абый": "9999",
-  "Рамазан Абый": "5642",
-  "Мунир Абый": "0976",
-  "Нияз Абый": "7639",
-  "Яхъя Абый": "7298",
-  "Гумар Абый": "6483",
-  "Райнур Абый": "3409",
-  "Айдар Абый": "1074",
-  "Рустам Саматович": "4507",
-  "Роберт Абый": "3900",
-  "Руслан Абый" : "2953"
-};
-
-const bookingsList = document.getElementById("bookings-list");
-const form = document.getElementById("booking-form");
-
-async function loadBookings() {
-  const now = new Date();
-
-  const { data, error } = await supabase
-    .from("bookings")
-    .select("*")
-    .order("date_start", { ascending: true })
-    .order("time_start", { ascending: true });
-
-  if (error) {
-    bookingsList.innerHTML = `<li>Ошибка загрузки бронирований: ${error.message}</li>`;
-    return;
-  }
-
-  bookingsList.innerHTML = "";
-
-  data.forEach(booking => {
-    const bookingDate = new Date(`${booking.date_start}T${booking.time_end}`);
-    if (bookingDate < now) return; // ⛔️ Пропускаем старые
-
-    const start = new Date(`${booking.date_start}T${booking.time_start}`);
-    const end = new Date(`${booking.date_start}T${booking.time_end}`);
-    const isNowActive = now >= start && now <= end;
-
-    const li = document.createElement("li");
-
-    if (isNowActive) {
-      li.style.borderLeft = "4px solid #4CAF50";
-      li.style.backgroundColor = "#d4f9d5"; // Светло-зелёный
+document.addEventListener('DOMContentLoaded', function () {
+    // Проверяем, есть ли необходимые элементы на странице
+    if (!document.getElementById('booking-form')) {
+        return; // Если это не страница бронирования, выходим
     }
 
-    const formattedDate = formatDate(booking.date_start);
-    li.innerHTML = `<div class="booking-date-time">${formattedDate}, с ${booking.time_start} до ${booking.time_end}</div>
-                    <div class="booking-name">${booking.name}</div>`;
+    const form = document.getElementById('booking-form');
+    const nameSelect = document.getElementById('name');
+    const codeInput = document.getElementById('code');
+    const dateInput = document.getElementById('date');
+    const startTimeInput = document.getElementById('start-time');
+    const endTimeInput = document.getElementById('end-time');
+    const bookingsList = document.getElementById('bookings-list');
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteCodeInput = document.getElementById('delete-code');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    const cancelDeleteBtn = document.getElementById('cancel-delete');
 
-    bookingsList.appendChild(li);
-  });
+    let currentDeleteId = null;
+    let users = [];
 
-  if (bookingsList.children.length === 0) {
-    bookingsList.innerHTML = "<li>Нет активных или будущих бронирований.</li>";
-  }
-}
-
-form.addEventListener("submit", async function(e) {
-  e.preventDefault();
-
-  const name = document.getElementById("name").value.trim();
-  const code = document.getElementById("code").value.trim();
-  const date = document.getElementById("date").value;
-  const timeStart = document.getElementById("start-time").value;
-  const timeEnd = document.getElementById("end-time").value;
-
-  if (!validCodes[name] || validCodes[name] !== code) {
-    alert("Неверный код для выбранного имени!");
-    return;
-  }
-
-  const bookingStartDateTime = new Date(`${date}T${timeStart}`);
-  const now = new Date();
-
-  if (bookingStartDateTime < now) {
-    alert("❌ Нельзя бронировать прошедшее время!");
-    return;
-  }
-
-  if (timeEnd <= timeStart) {
-    alert("Время окончания должно быть позже времени начала!");
-    return;
-  }
-
-  const { data: existingBookings, error: fetchError } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("date_start", date);
-
-  if (fetchError) {
-    alert("Ошибка при получении бронирований.");
-    return;
-  }
-
-  const conflict = existingBookings.some(booking => {
-    return (
-      (timeStart >= booking.time_start && timeStart < booking.time_end) ||
-      (timeEnd > booking.time_start && timeEnd <= booking.time_end) ||
-      (timeStart <= booking.time_start && timeEnd >= booking.time_end)
-    );
-  });
-
-  if (conflict) {
-    alert("❌ Это время уже занято! Пожалуйста, выберите другое.");
-    return;
-  }
-
-  const { error: insertError } = await supabase.from("bookings").insert([
-    {
-      name,
-      code,
-      date_start: date,
-      time_start: timeStart,
-      date_end: date,
-      time_end: timeEnd
+    // Загружаем пользователей
+    function loadUsers() {
+        users = db.getUsers();
+        updateUserSelect();
     }
-  ]);
 
-  if (insertError) {
-    alert("Ошибка при отправке данных.");
-  } else {
-    alert("✅ Бронирование успешно!");
-    form.reset();
+    // Обновляем список пользователей в select
+    function updateUserSelect() {
+        nameSelect.innerHTML = '<option value="">Выберите воспитателя</option>';
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.name;
+            option.textContent = user.name;
+            nameSelect.appendChild(option);
+        });
+    }
+
+    // Загружаем бронирования
+    function loadBookings() {
+        const bookings = db.getBookings();
+        const now = new Date();
+
+        bookingsList.innerHTML = '';
+
+        if (bookings.length === 0) {
+            bookingsList.innerHTML = '<div class="no-bookings">Нет активных бронирований</div>';
+            return;
+        }
+
+        bookings.forEach(booking => {
+            const bookingDate = new Date(`${booking.date}T${booking.end_time}`);
+            if (bookingDate < now) return; // Пропускаем прошедшие бронирования
+
+            const bookingElement = document.createElement('div');
+            bookingElement.className = 'booking-item';
+
+            const start = new Date(`${booking.date}T${booking.start_time}`);
+            const end = new Date(`${booking.date}T${booking.end_time}`);
+            const isNowActive = now >= start && now <= end;
+
+            if (isNowActive) {
+                bookingElement.classList.add('active-booking');
+            }
+
+            const formattedDate = formatDate(booking.date);
+            bookingElement.innerHTML = `
+        <div class="booking-info">
+          <div class="booking-date-time">${formattedDate}, с ${booking.start_time} до ${booking.end_time}</div>
+          <div class="booking-name">${booking.user_name}</div>
+        </div>
+        <button class="delete-btn btn-red" data-id="${booking.id}" data-name="${booking.user_name}">Удалить</button>
+      `;
+
+            bookingsList.appendChild(bookingElement);
+        });
+
+        // Добавляем обработчики для кнопок удаления
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                currentDeleteId = parseInt(this.getAttribute('data-id'));
+                const userName = this.getAttribute('data-name');
+                deleteModal.setAttribute('data-name', userName);
+                deleteModal.style.display = 'flex';
+            });
+        });
+    }
+
+    // Форматирование даты
+    function formatDate(inputDate) {
+        const date = new Date(inputDate);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
+    // Обработка отправки формы
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const name = nameSelect.value.trim();
+        const code = codeInput.value.trim();
+        const date = dateInput.value;
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        // Валидация
+        if (!name || !code || !date || !startTime || !endTime) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
+
+        // Проверка кода
+        const isValid = db.validateUserCode(name, code);
+        if (!isValid) {
+            alert('Неверный код для выбранного имени!');
+            return;
+        }
+
+        // Проверка времени
+        const bookingStartDateTime = new Date(`${date}T${startTime}`);
+        const now = new Date();
+
+        if (bookingStartDateTime < now) {
+            alert('Нельзя бронировать прошедшее время!');
+            return;
+        }
+
+        if (endTime <= startTime) {
+            alert('Время окончания должно быть позже времени начала!');
+            return;
+        }
+
+        // Проверка на пересечение с другими бронированиями
+        const bookings = db.getBookings();
+        const conflict = bookings.some(booking => {
+            if (booking.date !== date) return false;
+
+            return (
+                (startTime >= booking.start_time && startTime < booking.end_time) ||
+                (endTime > booking.start_time && endTime <= booking.end_time) ||
+                (startTime <= booking.start_time && endTime >= booking.end_time)
+            );
+        });
+
+        if (conflict) {
+            alert('Это время уже занято! Пожалуйста, выберите другое время.');
+            return;
+        }
+
+        // Добавляем бронирование
+        const userId = db.getUserId(name);
+        if (userId === null) {
+            alert('Ошибка: пользователь не найден');
+            return;
+        }
+
+        try {
+            const success = db.addBooking(userId, date, startTime, endTime, name, code);
+            if (success) {
+                alert('Бронирование успешно создано!');
+                form.reset();
+                loadBookings();
+            } else {
+                alert('Ошибка при создании бронирования');
+            }
+        } catch (error) {
+            alert('Ошибка при создании бронирования: ' + error.message);
+        }
+    });
+
+    // Обработка удаления бронирования
+    confirmDeleteBtn.addEventListener('click', function () {
+        if (!currentDeleteId) return;
+
+        const code = deleteCodeInput.value.trim();
+        if (!code) {
+            alert('Пожалуйста, введите код для удаления');
+            return;
+        }
+
+        const userName = deleteModal.getAttribute('data-name');
+
+        try {
+            const success = db.deleteBooking(currentDeleteId, code);
+            if (success) {
+                deleteModal.style.display = 'none';
+                deleteCodeInput.value = '';
+                alert('Бронирование успешно удалено!');
+                loadBookings();
+            } else {
+                alert('Ошибка при удалении бронирования');
+            }
+        } catch (error) {
+            alert('Ошибка при удалении: ' + error.message);
+        }
+    });
+
+    cancelDeleteBtn.addEventListener('click', function () {
+        deleteModal.style.display = 'none';
+        deleteCodeInput.value = '';
+        currentDeleteId = null;
+    });
+
+    // Закрытие модального окна при клике вне его
+    window.addEventListener('click', function (e) {
+        if (e.target === deleteModal) {
+            deleteModal.style.display = 'none';
+            deleteCodeInput.value = '';
+            currentDeleteId = null;
+        }
+    });
+
+    // Устанавливаем минимальную дату как сегодняшнюю
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+
+    // Инициализация
+    loadUsers();
     loadBookings();
-  }
 });
-
-// Пример функции форматирования даты
-function formatDate(inputDate) {
-  const date = new Date(inputDate);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
-}
-
-// Пример добавления брони в список:
-function displayBooking(booking) {
-  const { date, startTime, endTime, name } = booking;
-
-  const li = document.createElement("li");
-
-  const topLine = document.createElement("div");
-  topLine.className = "booking-date-time";
-  topLine.textContent = `${formatDate(date)}, с ${startTime} до ${endTime}`;
-
-  const bottomLine = document.createElement("div");
-  bottomLine.className = "booking-name";
-  bottomLine.textContent = name;
-
-  li.appendChild(topLine);
-  li.appendChild(bottomLine);
-  document.getElementById("bookings-list").appendChild(li);
-}
-loadBookings();

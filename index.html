@@ -1,65 +1,97 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Бронирование поля</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Бронирование поля</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+    </style>
 </head>
+
 <body>
-  <main class="main-wrapper">
-    <section class="form-section">
-      <h1>Бронирование поля</h1>
-      <form id="booking-form">
-        <label>Воспитатель:
-          <select id="name" required>
-            <option value="Марат Абый">Марат Абый</option>
-            <option value="Камил Абый">Камил Абый</option>
-            <option value="Данил Абый">Данил Абый</option>
-            <option value="Карим Абый">Карим Абый</option>
-            <option value="Рамазан Абый">Рамазан Абый</option>
-            <option value="Мунир Абый">Мунир Абый</option>
-            <option value="Нияз Абый">Нияз Абый</option>
-            <option value="Яхъя Абый">Яхъя Абый</option>
-            <option value="Гумар Абый">Гумар Абый</option>
-            <option value="Райнур Абый">Райнур Абый</option>
-            <option value="Айдар Абый">Айдар Абый</option>
-            <option value="Роберт Абый">Роберт Абый</option>
-            <option value="Руслан Абый">Руслан Абый</option>
-            <option value="Рустам Саматович">Рустам Саматович</option>
-            </select>
-        </label>
+    <header>
+        <h1>Система бронирования футбольного поля</h1>
+        <a href="admin.html" class="admin-link">Панель администратора</a>
+    </header>
 
-        <label>Код:
-          <input type="text" id="code" required />
-        </label>
+    <main class="main-wrapper">
+        <section class="form-section">
+            <h2>Новое бронирование</h2>
+            <form id="booking-form">
+                <label>Воспитатель:
+                    <select id="name" required>
+                        <option value="">Выберите воспитателя</option>
+                        <!-- Опции будут добавлены через JavaScript -->
+                    </select>
+                </label>
 
-        <label>Дата:
-          <input type="date" id="date" required />
-        </label>
+                <label>Код:
+                    <input type="password" id="code" required />
+                </label>
 
-        <label>Начало:
-          <input type="time" id="start-time" required />
-        </label>
+                <label>Дата:
+                    <input type="date" id="date" required />
+                </label>
 
-        <label>Конец:
-          <input type="time" id="end-time" required />
-        </label>
+                <label>Начало:
+                    <input type="time" id="start-time" required />
+                </label>
 
-        <button type="submit">Забронировать</button>
-      </form>
-    </section>
+                <label>Конец:
+                    <input type="time" id="end-time" required />
+                </label>
 
-    <section class="bookings-section">
-      <h2>Текущие бронирования:</h2>
-      <ul id="bookings-list"></ul>
-    </section>
-  </main>
+                <button type="submit">Забронировать</button>
+            </form>
+        </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js"></script>
+        <section class="bookings-section">
+            <h2>Текущие бронирования:</h2>
+            <div id="bookings-list"></div>
+        </section>
+
+        <!-- Модальное окно для удаления брони -->
+        <div id="delete-modal" class="modal">
+            <div class="modal-content">
+                <h3>Подтверждение удаления</h3>
+                <p>Для удаления бронирования введите код:</p>
+                <input type="password" id="delete-code" placeholder="Код подтверждения">
+                <div class="modal-buttons">
+                    <button id="confirm-delete" class="btn-red">Удалить</button>
+                    <button id="cancel-delete" class="btn-gray">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Загрузка SQL.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script>
+        // Глобальная функция для инициализации SQL.js
+        window.initDatabase = function (callback) {
+            if (window.SQL) {
+                // SQL.js уже загружен
+                callback();
+                return;
+            }
+
+            initSqlJs({
+                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+            }).then(function (SQL) {
+                window.SQL = SQL;
+                callback();
+            }).catch(function (error) {
+                console.error("Ошибка загрузки SQL.js:", error);
+                alert("Ошибка загрузки базы данных. Пожалуйста, обновите страницу.");
+            });
+        };
+    </script>
+
+    <script src="database.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
