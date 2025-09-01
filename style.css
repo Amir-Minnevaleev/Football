@@ -234,6 +234,23 @@ button:hover {
   color: #777;
 }
 
+.btn-green {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-green:hover {
+  background: #3e9742;
+  transform: scale(1.02);
+}
+
 /* Модальное окно */
 .modal {
   display: none;
